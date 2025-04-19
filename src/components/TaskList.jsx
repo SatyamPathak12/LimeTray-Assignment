@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTasks } from '../context/TaskContext';
 
 export default function TaskList({ filter }) {
@@ -25,27 +26,43 @@ export default function TaskList({ filter }) {
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId="tasklist">
         {(provided) => (
-          <ul className="task-list" ref={provided.innerRef} {...provided.droppableProps}>
-            {filteredTasks.map((task, index) => (
-              <Draggable key={task.id} draggableId={task.id} index={index}>
-                {(provided) => (
-                  <li
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                    className={`task-item ${task.completed ? 'done' : ''}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={task.completed}
-                      onChange={() => toggleTask(task.id)}
-                    />
-                    {task.text}
-                    <button onClick={() => deleteTask(task.id)}>🗑</button>
-                  </li>
-                )}
-              </Draggable>
-            ))}
+          <ul
+            className="task-list"
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+          >
+            <AnimatePresence>
+              {filteredTasks.map((task, index) => (
+                <Draggable
+                  key={task.id}
+                  draggableId={task.id.toString()}
+                  index={index}
+                >
+                  {(provided) => (
+                    <motion.li
+                      className={`task-item ${task.completed ? 'done' : ''}`}
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="task-left">
+                        <input
+                          type="checkbox"
+                          checked={task.completed}
+                          onChange={() => toggleTask(task.id)}
+                        />
+                        <span>{task.text}</span>
+                      </div>
+                      <button onClick={() => deleteTask(task.id)}>🗑</button>
+                    </motion.li>
+                  )}
+                </Draggable>
+              ))}
+            </AnimatePresence>
             {provided.placeholder}
           </ul>
         )}
